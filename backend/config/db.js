@@ -23,7 +23,7 @@ async function connectDB(uri = env.mongodbUri) {
     mongoose.connection.on('disconnected', () => console.warn('[db] MongoDB disconnected'));
 
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 25000, // generous: cloud DBs + slow DNS need it
       maxPoolSize: 5, // single user - a tiny pool is more than enough
     });
 

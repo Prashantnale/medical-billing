@@ -11,7 +11,15 @@ const app = require('./app');
 let server;
 
 async function start() {
-  await connectDB();
+  // one retry: cloud DBs / DNS hiccups can fail a first attempt transiently
+  try {
+    await connectDB();
+  } catch (firstErr) {
+    console.warn('[server] First DB connect attempt failed:', firstErr.message);
+    console.warn('[server] Retrying once in 3 seconds...');
+    await new Promise((r) => setTimeout(r, 3000));
+    await connectDB();
+  }
 
   server = app.listen(env.port, () => {
     console.log(`[server] Bill Generation Software running on http://localhost:${env.port} (${env.nodeEnv})`);
