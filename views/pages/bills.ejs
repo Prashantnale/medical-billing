@@ -1,0 +1,59 @@
+<%- include('../partials/layout-top') %>
+
+<div class="w-full space-y-4">
+
+  <!-- Filters -->
+  <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
+      <div class="relative">
+        <i data-lucide="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+        <input id="search-input" type="search" placeholder="Search invoice no, customer, doctor…"
+          class="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20">
+      </div>
+      <div class="grid grid-cols-2 gap-2 sm:contents">
+        <input id="from-date" type="date" aria-label="From date"
+          class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20">
+        <input id="to-date" type="date" aria-label="To date"
+          class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20">
+      </div>
+      <select id="status-filter" aria-label="Status filter"
+        class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base outline-none focus:border-teal-600 sm:w-auto">
+        <option value="all">All</option>
+        <option value="active">Active</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <button id="clear-filters" type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100">Clear</button>
+    </div>
+  </div>
+
+  <!-- Result meta -->
+  <div class="flex items-center justify-between px-1">
+    <p id="result-meta" class="text-xs font-medium text-slate-500">Loading…</p>
+  </div>
+
+  <!-- Desktop table -->
+  <div class="hidden overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 md:block">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-4 py-3">Invoice</th>
+          <th class="px-4 py-3">Customer</th>
+          <th class="px-4 py-3">Date &amp; Time</th>
+          <th class="px-4 py-3 text-right">Taxable</th>
+          <th class="px-4 py-3 text-right">Net Amount</th>
+          <th class="px-4 py-3 text-center">Status</th>
+          <th class="px-4 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="bills-tbody" class="divide-y divide-slate-100"></tbody>
+    </table>
+  </div>
+
+  <!-- Mobile cards -->
+  <div id="bills-cards" class="space-y-2.5 md:hidden"></div>
+
+  <!-- Pagination (rendered only when there is more than one page) -->
+  <div id="pagination"></div>
+</div>
+
+<%- include('../partials/layout-bottom', { scripts: ['bills-list'] }) %>

@@ -1,0 +1,63 @@
+/* ==========================================================================
+   Dedicated print stylesheet (screen: nothing; print: only the invoice).
+   The @page rule itself lives in an inline <style id="print-page-style">
+   on the bill view page so bill-view.js can swap A4 <-> 80mm dynamically.
+   ========================================================================== */
+
+/* Screen: A4 invoice keeps its designed width; pan inside its own scroll
+   container instead of overflowing the page on phones. */
+@media screen {
+  #invoice-wrap-a4 {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #invoice-wrap-a4 .invoice-a4 {
+    min-width: 186mm; /* readable minimum; page margin handles the rest */
+  }
+}
+
+@media print {
+
+  /* Hide the entire app chrome and any interactive layer */
+  body { background: #fff !important; margin: 0 !important; }
+  aside#sidebar,
+  #sidebar-overlay,
+  header,
+  nav,
+  .no-print,
+  #toast-root,
+  #cancel-modal {
+    display: none !important;
+  }
+
+  /* Neutralize the app shell layout */
+  body > div.flex { display: block !important; min-height: 0 !important; }
+  main { padding: 0 !important; }
+
+  /* Show only the visible invoice template */
+  #print-area { display: block !important; }
+  body[data-print-format='thermal'] #invoice-wrap-a4 { display: none !important; }
+  body[data-print-format='a4'] #invoice-wrap-thermal { display: none !important; }
+
+  /* Invoice surface: exact white, no shadow */
+  .invoice-a4,
+  .invoice-thermal {
+    box-shadow: none !important;
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  /* Keep designed inner padding for A4 (page margin handled by @page) */
+  body[data-print-format='a4'] .invoice-a4 { padding: 0 !important; }
+
+  /* Color accuracy for the teal header bands */
+  .invoice-a4, .invoice-thermal { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Table hygiene: repeat headers, avoid row splits */
+  .invoice-a4 thead { display: table-header-group; }
+  .invoice-a4 tr, .invoice-thermal tr { page-break-inside: avoid; break-inside: avoid; }
+
+  /* Cancelled watermark layer must not clip */
+  #print-area { position: static !important; overflow: visible !important; }
+}

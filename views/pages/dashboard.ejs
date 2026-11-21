@@ -1,0 +1,104 @@
+<%- include('../partials/layout-top') %>
+
+<div class="w-full space-y-6">
+
+  <!-- Greeting -->
+  <div class="rounded-2xl bg-gradient-to-r from-teal-700 to-teal-600 p-5 text-white shadow-lg sm:p-6">
+    <p class="text-sm text-teal-100"><%= new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+    <h2 class="mt-1 text-xl font-bold sm:text-2xl">Namaste, <%= admin ? admin.name.split(' ')[0] : 'Owner' %> 👋</h2>
+    <p class="mt-1 text-sm text-teal-100">Here is your billing summary.</p>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-medium text-slate-500">Today's Sales</p>
+        <span class="rounded-lg bg-teal-50 p-2 text-teal-700"><i data-lucide="calendar-days" class="h-4 w-4"></i></span>
+      </div>
+      <p id="stat-today" class="mt-2 text-lg font-bold text-slate-800 sm:text-2xl">₹<%= stats.today.total.toFixed(2) %></p>
+      <p class="text-xs text-slate-400"><%= stats.today.count %> bill(s)</p>
+    </div>
+    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-medium text-slate-500">This Month</p>
+        <span class="rounded-lg bg-indigo-50 p-2 text-indigo-700"><i data-lucide="calendar-range" class="h-4 w-4"></i></span>
+      </div>
+      <p id="stat-month" class="mt-2 text-lg font-bold text-slate-800 sm:text-2xl">₹<%= stats.month.total.toFixed(2) %></p>
+      <p class="text-xs text-slate-400"><%= stats.month.count %> bill(s)</p>
+    </div>
+    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-medium text-slate-500">All Time</p>
+        <span class="rounded-lg bg-amber-50 p-2 text-amber-700"><i data-lucide="banknote" class="h-4 w-4"></i></span>
+      </div>
+      <p id="stat-all" class="mt-2 text-lg font-bold text-slate-800 sm:text-2xl">₹<%= stats.allTime.total.toFixed(2) %></p>
+      <p class="text-xs text-slate-400"><%= stats.allTime.count %> bill(s)</p>
+    </div>
+    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-medium text-slate-500">Next Invoice #</p>
+        <span class="rounded-lg bg-slate-100 p-2 text-slate-600"><i data-lucide="hash" class="h-4 w-4"></i></span>
+      </div>
+      <p class="mt-2 text-lg font-bold text-teal-700 sm:text-2xl"><%= nextInvoiceNumber %></p>
+      <p class="text-xs text-slate-400">auto-numbered</p>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    <a href="/bills/new" class="flex flex-col items-center gap-2 rounded-2xl bg-teal-700 p-4 text-center text-white shadow-sm transition hover:bg-teal-800 active:scale-[0.98]">
+      <i data-lucide="file-plus-2" class="h-6 w-6"></i>
+      <span class="text-sm font-semibold">Create Bill</span>
+    </a>
+    <a href="/bills" class="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 text-center text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 active:scale-[0.98]">
+      <i data-lucide="receipt-text" class="h-6 w-6 text-teal-700"></i>
+      <span class="text-sm font-semibold">Previous Bills</span>
+    </a>
+    <a href="/settings" class="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 text-center text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 active:scale-[0.98]">
+      <i data-lucide="settings" class="h-6 w-6 text-teal-700"></i>
+      <span class="text-sm font-semibold">Settings</span>
+    </a>
+    <a href="/api/bills/stats" id="refresh-stats" class="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 text-center text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 active:scale-[0.98]">
+      <i data-lucide="refresh-cw" class="h-6 w-6 text-teal-700"></i>
+      <span class="text-sm font-semibold">Refresh</span>
+    </a>
+  </div>
+
+  <!-- Recent bills -->
+  <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
+      <h3 class="text-sm font-bold text-slate-700">Recent Bills</h3>
+      <a href="/bills" class="text-xs font-semibold text-teal-700 hover:underline">View all</a>
+    </div>
+    <% if (recent.length === 0) { %>
+      <div class="flex flex-col items-center gap-2 px-4 py-10 text-center">
+        <i data-lucide="inbox" class="h-8 w-8 text-slate-300"></i>
+        <p class="text-sm text-slate-400">No bills yet. Create your first bill.</p>
+        <a href="/bills/new" class="mt-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800">Create New Bill</a>
+      </div>
+    <% } else { %>
+      <ul class="divide-y divide-slate-100">
+        <% recent.forEach(function (b) { %>
+          <li>
+            <a href="/bills/view/<%= b._id %>" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 sm:px-5">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                <i data-lucide="receipt-text" class="h-4 w-4"></i>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-slate-800"><%= b.invoiceNumber %> · <%= b.customer.name %></p>
+                <p class="text-xs text-slate-400"><%= new Date(b.invoiceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %><%= b.invoiceTime ? ' · ' + b.invoiceTime : '' %></p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-bold text-slate-800">₹<%= b.summary.netAmount.toFixed(2) %></p>
+                <% if (b.status === 'cancelled') { %><span class="text-[10px] font-bold uppercase text-red-500">Cancelled</span><% } %>
+              </div>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/layout-bottom', { scripts: ['dashboard'] }) %>

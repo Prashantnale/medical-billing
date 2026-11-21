@@ -1,0 +1,84 @@
+<%- include('head') %>
+<body class="bg-slate-100 font-sans text-slate-800 antialiased">
+
+<!-- ===== Sidebar: mobile-only slide-in drawer ===== -->
+<div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-slate-900/50 backdrop-blur-sm"></div>
+
+<aside id="sidebar"
+  class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-teal-900 text-teal-50 shadow-xl transition-transform duration-200">
+
+  <div class="flex h-14 items-center gap-2.5 border-b border-teal-800 px-4">
+    <% if (logoDataUrl) { %>
+      <img src="<%= logoDataUrl %>" alt="logo" class="h-8 w-8 rounded-lg object-cover">
+    <% } else { %>
+      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-700 text-sm font-bold text-teal-100">Rx</span>
+    <% } %>
+    <div class="min-w-0">
+      <p class="truncate text-sm font-semibold"><%= businessName %></p>
+      <p class="text-[11px] text-teal-300">Billing Software</p>
+    </div>
+    <button id="sidebar-close" class="ml-auto rounded-lg p-1.5 hover:bg-teal-800" aria-label="Close menu">
+      <i data-lucide="x" class="h-5 w-5"></i>
+    </button>
+  </div>
+
+  <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4" aria-label="Main navigation">
+    <a href="/dashboard" class="nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors <%= path === '/dashboard' ? 'bg-teal-700 text-white shadow' : 'text-teal-100 hover:bg-teal-800' %>">
+      <i data-lucide="layout-dashboard" class="h-5 w-5 shrink-0"></i> Dashboard
+    </a>
+    <a href="/bills/new" class="nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors <%= path === '/bills/new' ? 'bg-teal-700 text-white shadow' : 'text-teal-100 hover:bg-teal-800' %>">
+      <i data-lucide="file-plus-2" class="h-5 w-5 shrink-0"></i> Create New Bill
+    </a>
+    <a href="/bills" class="nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors <%= (path === '/bills' || path.startsWith('/bills/view')) ? 'bg-teal-700 text-white shadow' : 'text-teal-100 hover:bg-teal-800' %>">
+      <i data-lucide="receipt-text" class="h-5 w-5 shrink-0"></i> Previous Bills
+    </a>
+    <a href="/medicines" class="nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors <%= path.startsWith('/medicines') ? 'bg-teal-700 text-white shadow' : 'text-teal-100 hover:bg-teal-800' %>">
+      <i data-lucide="pill" class="h-5 w-5 shrink-0"></i> Medicines
+    </a>
+    <a href="/settings" class="nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors <%= path === '/settings' ? 'bg-teal-700 text-white shadow' : 'text-teal-100 hover:bg-teal-800' %>">
+      <i data-lucide="settings" class="h-5 w-5 shrink-0"></i> Business Settings
+    </a>
+  </nav>
+
+  <div class="border-t border-teal-800 p-3">
+    <div class="mb-2 px-3">
+      <p class="truncate text-sm font-medium"><%= admin ? admin.name : '' %></p>
+      <p class="truncate text-[11px] text-teal-300"><%= admin ? admin.email : '' %></p>
+    </div>
+    <button class="logout-btn flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-teal-100 transition-colors hover:bg-red-600/90">
+      <i data-lucide="log-out" class="h-5 w-5 shrink-0"></i> Logout
+    </button>
+  </div>
+</aside>
+
+<!-- ===== Main column: full width on every screen ===== -->
+<div class="flex min-w-0 flex-1 flex-col">
+
+  <!-- Topbar: hamburger (mobile) + title + desktop menu + user/logout -->
+  <header class="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur md:px-6">
+    <button id="sidebar-open" class="rounded-xl p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open menu">
+      <i data-lucide="menu" class="h-6 w-6"></i>
+    </button>
+    <h1 class="min-w-0 truncate text-base font-semibold text-slate-800 md:text-lg lg:hidden"><%= title %></h1>
+
+    <!-- Desktop top menu -->
+    <nav class="mx-2 hidden items-center gap-1 lg:flex" aria-label="Desktop navigation">
+      <a href="/dashboard" class="topnav-link rounded-xl px-3.5 py-2 text-sm font-semibold <%= path === '/dashboard' ? 'bg-teal-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100' %>">Dashboard</a>
+      <a href="/bills/new" class="topnav-link rounded-xl px-3.5 py-2 text-sm font-semibold <%= path === '/bills/new' ? 'bg-teal-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100' %>">Create New Bill</a>
+      <a href="/bills" class="topnav-link rounded-xl px-3.5 py-2 text-sm font-semibold <%= (path === '/bills' || path.startsWith('/bills/view')) ? 'bg-teal-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100' %>">Previous Bills</a>
+      <a href="/medicines" class="topnav-link rounded-xl px-3.5 py-2 text-sm font-semibold <%= path.startsWith('/medicines') ? 'bg-teal-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100' %>">Medicines</a>
+      <a href="/settings" class="topnav-link rounded-xl px-3.5 py-2 text-sm font-semibold <%= path === '/settings' ? 'bg-teal-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100' %>">Business Settings</a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2">
+      <a href="/bills/new" class="hidden items-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 sm:flex">
+        <i data-lucide="plus" class="h-4 w-4"></i> New Bill
+      </a>
+      <span class="hidden text-sm font-medium text-slate-500 lg:block"><%= admin ? admin.name : '' %></span>
+      <button class="logout-btn rounded-xl p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600" aria-label="Logout" title="Logout">
+        <i data-lucide="log-out" class="h-5 w-5"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="w-full flex-1 p-4 pb-24 md:p-5 md:pb-6">

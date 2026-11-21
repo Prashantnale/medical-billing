@@ -1,0 +1,194 @@
+<%
+  /** A4 invoice in the classic counter-billing format (matches the sample):
+   *  centered title, 3-column bordered header (shop | invoice | party),
+   *  items table with Com/HSN/Qty x Unit/.../%CGST/%SGST split columns,
+   *  tall items box, Remark totals row, GROSS/ADD/LESS/NET block,
+   *  amount-in-words bar and dashed footer line. */
+
+  function inr(v) {
+    const n = Number(v) || 0;
+    const neg = n < 0;
+    const [i, d] = Math.abs(n).toFixed(2).split('.');
+    const last3 = i.slice(-3);
+    const rest = i.slice(0, -3);
+    return (neg ? '-' : '') + (rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3) + '.' + d;
+  }
+  const s = bill.seller || {};
+  const c = bill.customer || {};
+  const sum = bill.summary || {};
+  const isIgst = bill.taxSplit === 'igst';
+
+  const d = new Date(bill.invoiceDate);
+  const dateStr = isNaN(d)
+    ? ''
+    : String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+
+  const addrLine = (s.addressText || '').split('\n').filter(Boolean).join(', ');
+  const wordsLine = (sum.amountInWords || '')
+    .toUpperCase()
+    .replace(/^RUPEES\s+/, 'Rs.')
+    .replace(/\s+ONLY$/, ' ONLY');
+
+  // GROSS/ADD/LESS reconciliation (exact): NET = GROSS + ADD - LESS = netAmount
+  const gross = sum.totalTaxable || 0;
+  const addAmt = Math.round(((sum.totalTax || 0) + (sum.additionalCharges || 0) + Math.max(sum.roundOff || 0, 0)) * 100) / 100;
+  const lessAmt = Math.round(Math.max(-(sum.roundOff || 0), 0) * 100) / 100;
+
+  // filler height keeps the items box tall like the sample (page-filling layout)
+  const fillerH = Math.max(10, 132 - bill.items.length * 9);
+
+  const colCount = isIgst ? 12 : 14; // 10 base columns + 2 (IGST) or 2x2 (CGST/SGST)
+%>
+
+<div class="invoice-a4 mx-auto w-full max-w-[210mm] bg-white px-[6mm] py-[5mm] text-[11px] leading-tight text-black shadow-lg print:shadow-none">
+
+  <!-- Title -->
+  <h2 class="text-center text-[15px] font-bold uppercase tracking-wide"><%= bill.invoiceType %></h2>
+
+  <!-- ===== 3-column header ===== -->
+  <table class="mt-1 w-full border-collapse border border-black text-[11px]">
+    <tr>
+      <!-- shop -->
+      <td class="w-[38%] border-r border-black px-2 py-1.5 align-top">
+        <p class="text-[15px] font-bold leading-tight"><%= s.businessName %></p>
+        <% if (addrLine) { %><p class="mt-0.5"><%= addrLine %><%= s.phone ? ' , Ph : ' + s.phone : '' %></p><% } %>
+        <p class="mt-3 text-[10.5px]"><% if (s.drugLicenseNo) { %>D.L.No.: <%= s.drugLicenseNo %><% } %></p>
+        <p class="text-[10.5px]">
+          <% if (s.gstin) { %>GSTIN: <%= s.gstin %><% } %>
+          <% if (s.pan) { %> &nbsp;PAN : <%= s.pan %><% } %>
+        </p>
+      </td>
+      <!-- invoice meta -->
+      <td class="w-[27%] border-r border-black px-2 py-1.5 align-top">
+        <p class="text-[12.5px] font-bold">Invoice No : <%= bill.invoiceNumber %></p>
+        <p>Date : <%= dateStr %></p>
+        <p>Time : <%= bill.invoiceTime %></p>
+        <p>User : <%= bill.userName || '' %></p>
+      </td>
+      <!-- party -->
+      <td class="w-[35%] px-2 py-1.5 align-top">
+        <p>PARTY NAME : <span class="font-semibold"><%= c.name %></span></p>
+        <% if (c.address) { %><p>Address : <%= c.address %></p><% } %>
+        <% if (c.doctorName) { %><p>Doctor&nbsp;&nbsp;: <%= c.doctorName %></p><% } %>
+        <% if (c.gstin) { %><p>GSTIN&nbsp;&nbsp;&nbsp;&nbsp;: <%= c.gstin %></p><% } %>
+      </td>
+    </tr>
+  </table>
+
+  <!-- ===== Items table ===== -->
+  <table class="w-full border-collapse border border-black text-[10.5px]">
+    <thead>
+      <tr class="text-center align-middle">
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[6%]">Com</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[7%]">HSN No</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[7.5%]">Qty x Unit</th>
+        <th rowspan="2" class="border border-black px-1 py-1 font-normal text-left w-[18%]">Product Name</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[8%]">Batch</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[5.5%]">Exp</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[6%]">M.R.P.</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[6%]">Rate</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[5%]">Disc</th>
+        <th rowspan="2" class="border border-black px-0.5 py-1 font-normal w-[7.5%]">Taxable</th>
+        <% if (isIgst) { %>
+          <th colspan="2" class="border border-black px-0.5 py-0.5 font-normal">% IGST Amt</th>
+        <% } else { %>
+          <th colspan="2" class="border border-black px-0.5 py-0.5 font-normal">% CGST Amt</th>
+          <th colspan="2" class="border border-black px-0.5 py-0.5 font-normal">% SGST Amt</th>
+        <% } %>
+      </tr>
+      <tr class="text-center">
+        <% if (isIgst) { %>
+          <th class="border border-black px-0.5 py-0.5 font-normal w-[4%]">%</th>
+          <th class="border border-black px-0.5 py-0.5 font-normal w-[8%]">Amt</th>
+        <% } else { %>
+          <th class="border border-black px-0.5 py-0.5 font-normal w-[3%]">%</th>
+          <th class="border border-black px-0.5 py-0.5 font-normal w-[5%]">Amt</th>
+          <th class="border border-black px-0.5 py-0.5 font-normal w-[3%]">%</th>
+          <th class="border border-black px-0.5 py-0.5 font-normal w-[5%]">Amt</th>
+        <% } %>
+      </tr>
+    </thead>
+    <tbody class="align-top">
+      <% bill.items.forEach(function (it) { %>
+        <tr class="align-top">
+          <td class="border border-black px-0.5 py-1 text-center text-[9px] leading-tight">
+            <div class="line-clamp-2 [overflow-wrap:anywhere]"><%= it.composition || '' %></div>
+          </td>
+          <td class="border border-black px-0.5 py-1 text-center"><%= it.hsnCode || '' %></td>
+          <td class="border border-black px-0.5 py-1 text-center"><%= it.quantity %>x<%= (it.unit || '').toUpperCase() %></td>
+          <td class="border border-black px-1 py-1"><%= it.productName %></td>
+          <td class="border border-black px-0.5 py-1 text-center"><%= it.batchNumber || '' %></td>
+          <td class="border border-black px-0.5 py-1 text-center"><%= it.expiryDate || '' %></td>
+          <td class="border border-black px-0.5 py-1 text-right"><%= it.mrp ? inr(it.mrp) : '' %></td>
+          <td class="border border-black px-0.5 py-1 text-right"><%= inr(it.rate) %></td>
+          <td class="border border-black px-0.5 py-1 text-center"><%= it.discountValue ? (it.discountType === 'percent' ? it.discountValue : inr(it.discountValue)) : '' %></td>
+          <td class="border border-black px-0.5 py-1 text-right"><%= inr(it.taxableAmount) %></td>
+          <% if (isIgst) { %>
+            <td class="border border-black px-0.5 py-1 text-right"><%= it.gstRate %></td>
+            <td class="border border-black px-0.5 py-1 text-right"><%= inr(it.igstAmount) %></td>
+          <% } else { %>
+            <td class="border border-black px-0.5 py-1 text-right"><%= it.gstRate / 2 %></td>
+            <td class="border border-black px-0.5 py-1 text-right"><%= inr(it.cgstAmount) %></td>
+            <td class="border border-black px-0.5 py-1 text-right"><%= it.gstRate / 2 %></td>
+            <td class="border border-black px-0.5 py-1 text-right"><%= inr(it.sgstAmount) %></td>
+          <% } %>
+        </tr>
+      <% }) %>
+      <!-- page-filling spacer, exactly like the sample's tall items box -->
+      <tr aria-hidden="true"><td colspan="<%= colCount %>" class="border border-black" style="height: <%= fillerH %>mm"></td></tr>
+      <!-- Remark + column totals -->
+      <tr>
+        <td colspan="9" class="border border-black px-1.5 py-1 align-middle">
+          <span class="text-[12px] font-bold">Remark :</span>
+          <% if (bill.notes) { %><span class="ml-2"><%= bill.notes %></span><% } %>
+        </td>
+        <td class="border border-black px-0.5 py-1 text-center font-semibold"><%= inr(gross) %></td>
+        <% if (!isIgst) { %>
+          <td colspan="2" class="border border-black px-0.5 py-1 text-center font-semibold"><%= inr(sum.totalCgst) %></td>
+          <td colspan="2" class="border border-black px-0.5 py-1 text-center font-semibold"><%= inr(sum.totalSgst) %></td>
+        <% } else { %>
+          <td colspan="2" class="border border-black px-0.5 py-1 text-center font-semibold"><%= inr(sum.totalIgst) %></td>
+        <% } %>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ===== Footer band ===== -->
+  <table class="w-full border-collapse border border-black text-[11px]">
+    <tr>
+      <td class="w-[42%] border-r border-black px-2 py-1.5 align-top">
+        <p><%= s.thankYouText || 'Get well soon...' %></p>
+        <p class="mt-2 text-[10px]"><%= bill.termsText || 'Subject To Jurisdiction Only.&nbsp;&nbsp;E. & O.E.' %></p>
+      </td>
+      <td class="w-[28%] border-r border-black px-2 py-1.5 text-center align-top">
+        <p class="font-bold">For <%= s.businessName %></p>
+        <p class="mt-4 text-[10px]">Pharmacist</p>
+      </td>
+      <td class="w-[30%] px-2 py-1.5 align-top">
+        <table class="w-full text-[11.5px]">
+          <tr><td>GROSS</td><td class="text-right"><%= inr(gross) %></td></tr>
+          <tr><td>ADD</td><td class="text-right"><%= inr(addAmt) %></td></tr>
+          <tr><td>LESS</td><td class="text-right"><%= inr(lessAmt) %></td></tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="border-r border-t border-black px-2 py-1 text-[11.5px] font-semibold"><%= wordsLine %></td>
+      <td class="border-t border-black px-2 py-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[12px] font-bold">NET AMT</span>
+          <span class="text-[13px] font-bold"><%= inr(sum.netAmount) %></span>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- dashed bottom rule -->
+  <div class="mt-1 border-b border-dashed border-black"></div>
+
+  <% if (bill.status === 'cancelled') { %>
+    <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+      <span class="-rotate-12 text-6xl font-black uppercase text-red-600/20">Cancelled</span>
+    </div>
+  <% } %>
+</div>

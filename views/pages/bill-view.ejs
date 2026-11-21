@@ -1,0 +1,75 @@
+<%- include('../partials/layout-top') %>
+
+<div class="w-full space-y-4">
+
+  <!-- Action bar -->
+  <div class="no-print flex flex-wrap items-center gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+    <a href="/bills" class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">
+      <i data-lucide="arrow-left" class="h-4 w-4"></i> Back
+    </a>
+
+    <div class="ml-1 flex overflow-hidden rounded-xl ring-1 ring-slate-300" id="format-toggle" role="group" aria-label="Invoice format">
+      <button data-format="a4" class="format-btn px-3.5 py-2 text-sm font-semibold">A4</button>
+      <button data-format="thermal" class="format-btn border-l border-slate-300 px-3.5 py-2 text-sm font-semibold">80mm</button>
+    </div>
+
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      <% if (bill.status === 'active') { %>
+        <button id="print-btn" class="flex items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800">
+          <i data-lucide="printer" class="h-4 w-4"></i> Print
+        </button>
+      <% } %>
+      <a id="pdf-btn" href="/api/bills/<%= bill._id %>/pdf?download=1" target="_blank" rel="noopener"
+        class="flex items-center gap-1.5 rounded-xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-900">
+        <i data-lucide="file-down" class="h-4 w-4"></i> PDF
+      </a>
+      <a id="pdf-open" href="/api/bills/<%= bill._id %>/pdf" target="_blank" rel="noopener"
+        class="hidden items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 sm:flex">
+        <i data-lucide="external-link" class="h-4 w-4"></i> Open PDF
+      </a>
+      <% if (bill.status === 'active') { %>
+        <button id="cancel-bill-btn" class="flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
+          <i data-lucide="ban" class="h-4 w-4"></i> Cancel Bill
+        </button>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (bill.status === 'cancelled') { %>
+    <div class="no-print flex items-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-red-200">
+      <i data-lucide="triangle-alert" class="h-5 w-5 shrink-0"></i>
+      This bill was cancelled<%= bill.cancelledAt ? ' on ' + new Date(bill.cancelledAt).toLocaleString('en-IN') : '' %><%= bill.cancelledReason ? ' — ' + bill.cancelledReason : '' %>.
+    </div>
+  <% } %>
+
+  <!-- Print area: A4 + thermal templates; print CSS shows exactly one -->
+  <div id="print-area" class="relative" data-bill-id="<%= bill._id %>">
+    <div id="invoice-wrap-a4" class="invoice-wrap" data-format="a4">
+      <%- include('../partials/invoice-a4', { bill }) %>
+    </div>
+    <div id="invoice-wrap-thermal" class="invoice-wrap hidden" data-format="thermal">
+      <%- include('../partials/invoice-thermal', { bill }) %>
+    </div>
+  </div>
+</div>
+
+<!-- @page rules are swapped by bill-view.js depending on the chosen format -->
+<style id="print-page-style">@page { size: A4; margin: 8mm; }</style>
+
+<!-- Cancel dialog -->
+<div id="cancel-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
+    <h3 class="text-base font-bold text-slate-800">Cancel this bill?</h3>
+    <p class="mt-1 text-sm text-slate-500">The record is preserved for audit and cannot be reused. This cannot be undone.</p>
+    <label for="cancel-reason" class="mt-3 block text-sm font-medium text-slate-700">Reason</label>
+    <input id="cancel-reason" type="text" maxlength="200" placeholder="e.g. Wrong entry"
+      class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20">
+    <p id="cancel-error" class="mt-2 hidden text-sm text-red-600"></p>
+    <div class="mt-4 flex justify-end gap-2">
+      <button id="cancel-modal-close" class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">Keep Bill</button>
+      <button id="cancel-modal-confirm" class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700">Cancel Bill</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/layout-bottom', { scripts: ['bill-view'] }) %>

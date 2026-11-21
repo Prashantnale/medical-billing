@@ -1,0 +1,86 @@
+<%- include('../partials/layout-top') %>
+
+<div class="w-full space-y-4">
+
+  <!-- Add / update form -->
+  <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 id="form-heading" class="flex items-center gap-2 text-sm font-bold text-slate-700">
+        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-100 text-teal-700"><i data-lucide="pill" class="h-3.5 w-3.5"></i></span>
+        Add Medicine
+      </h2>
+      <button id="med-reset-btn" type="button" class="hidden items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100">
+        <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i> Cancel edit
+      </button>
+    </div>
+
+    <form id="medicine-form" novalidate class="grid grid-cols-2 gap-2.5 lg:grid-cols-7">
+      <div class="col-span-2 lg:col-span-2">
+        <label for="med-name" class="field-label">Name *</label>
+        <input id="med-name" type="text" maxlength="140" placeholder="e.g. PAN-O" class="field-input">
+      </div>
+      <div class="lg:col-span-1">
+        <label for="med-composition" class="field-label">Composition</label>
+        <input id="med-composition" type="text" maxlength="200" placeholder="Salt" class="field-input">
+      </div>
+      <div>
+        <label for="med-hsn" class="field-label">HSN</label>
+        <input id="med-hsn" type="text" maxlength="20" class="field-input">
+      </div>
+      <div>
+        <label for="med-mrp" class="field-label">MRP</label>
+        <input id="med-mrp" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" class="field-input">
+      </div>
+      <div>
+        <label for="med-rate" class="field-label">Rate</label>
+        <input id="med-rate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" class="field-input">
+        <p class="mt-1 text-[10px] text-slate-400">auto-fills on bills</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5 lg:col-span-2 lg:grid-cols-2">
+        <div>
+          <label for="med-unit" class="field-label">Unit</label>
+          <input id="med-unit" type="text" maxlength="20" placeholder="TAB" class="field-input uppercase" list="unit-suggestions">
+        </div>
+        <div>
+          <label for="med-gst" class="field-label">GST %</label>
+          <input id="med-gst" type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="5" class="field-input">
+        </div>
+      </div>
+      <div class="col-span-2 flex items-end lg:col-span-1">
+        <button type="submit" id="med-save-btn" class="flex w-full items-center justify-center gap-1.5 rounded-xl bg-teal-700 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-teal-800 disabled:opacity-60">
+          <i data-lucide="save" class="h-4 w-4"></i> <span id="med-save-label">Save Medicine</span>
+        </button>
+      </div>
+    </form>
+    <datalist id="unit-suggestions">
+      <% ['TAB', 'CAP', 'STRIP', 'BTL', 'VIAL', 'SYP', 'TUBE', 'SACHET', 'BOX', 'PCS', 'UNIT'].forEach(function (u) { %>
+        <option value="<%= u %>"></option>
+      <% }) %>
+    </datalist>
+    <p id="med-error" class="mt-2 hidden text-sm text-red-600"></p>
+    <p class="mt-2 text-xs text-slate-400">Medicines also save automatically when you bill them. Same name = update. Saved details auto-fill on the bill form.</p>
+  </section>
+
+  <!-- Search -->
+  <div class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+    <div class="relative">
+      <i data-lucide="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+      <input id="med-search" type="search" placeholder="Search medicines…"
+        class="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20">
+    </div>
+    <p id="med-result-meta" class="mt-2 px-1 text-xs font-medium text-slate-500"></p>
+  </div>
+
+  <!-- List -->
+  <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div id="medicine-list" class="divide-y divide-slate-100"></div>
+  </section>
+</div>
+
+<style>
+  .field-label { display:block; margin-bottom:.25rem; font-size:12px; font-weight:600; color:#475569; }
+  .field-input { width:100%; border-radius:.75rem; border:1px solid #cbd5e1; padding:.625rem .75rem; font-size:16px; outline:none; transition:border-color .15s, box-shadow .15s; }
+  .field-input:focus { border-color:#0d9488; box-shadow:0 0 0 3px rgba(13,148,136,.15); }
+</style>
+
+<%- include('../partials/layout-bottom', { scripts: ['medicines'] }) %>

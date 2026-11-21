@@ -1,0 +1,212 @@
+<%- include('../partials/layout-top') %>
+
+<div class="w-full space-y-4">
+
+  <form id="settings-form" novalidate class="space-y-4">
+
+    <!-- Business identity -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-slate-700">
+        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-100 text-teal-700"><i data-lucide="store" class="h-3.5 w-3.5"></i></span>
+        Business Identity
+      </h2>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label for="businessName" class="field-label">Business Name *</label>
+          <input id="businessName" type="text" required maxlength="120" class="field-input" value="<%= settings.businessName %>">
+        </div>
+        <div>
+          <label for="gstin" class="field-label">GSTIN</label>
+          <input id="gstin" type="text" maxlength="15" placeholder="15-char GSTIN" class="field-input uppercase" value="<%= settings.gstin %>">
+        </div>
+        <div>
+          <label for="pan" class="field-label">PAN</label>
+          <input id="pan" type="text" maxlength="10" placeholder="ABCDE1234F" class="field-input uppercase" value="<%= settings.pan %>">
+        </div>
+        <div>
+          <label for="drugLicenseNo" class="field-label">Drug License Number</label>
+          <input id="drugLicenseNo" type="text" maxlength="60" class="field-input" value="<%= settings.drugLicenseNo %>">
+        </div>
+        <div>
+          <label for="phone" class="field-label">Phone Number</label>
+          <input id="phone" type="tel" maxlength="20" class="field-input" value="<%= settings.phone %>">
+        </div>
+        <div>
+          <label for="email" class="field-label">Email</label>
+          <input id="email" type="email" maxlength="120" class="field-input" value="<%= settings.email %>">
+        </div>
+      </div>
+    </section>
+
+    <!-- Address -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-slate-700">
+        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-100 text-teal-700"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i></span>
+        Address
+      </h2>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label for="addressLine1" class="field-label">Address Line 1</label>
+          <input id="addressLine1" type="text" maxlength="120" class="field-input" value="<%= settings.address.addressLine1 %>">
+        </div>
+        <div class="sm:col-span-2">
+          <label for="addressLine2" class="field-label">Address Line 2</label>
+          <input id="addressLine2" type="text" maxlength="120" class="field-input" value="<%= settings.address.addressLine2 %>">
+        </div>
+        <div>
+          <label for="city" class="field-label">City</label>
+          <input id="city" type="text" maxlength="60" class="field-input" value="<%= settings.address.city %>">
+        </div>
+        <div>
+          <label for="state" class="field-label">State</label>
+          <input id="state" type="text" maxlength="60" class="field-input" value="<%= settings.address.state %>">
+        </div>
+        <div>
+          <label for="stateCode" class="field-label">State Code (GST)</label>
+          <input id="stateCode" type="text" maxlength="2" placeholder="27" class="field-input uppercase" value="<%= settings.address.stateCode %>">
+        </div>
+        <div>
+          <label for="pincode" class="field-label">Pincode</label>
+          <input id="pincode" type="text" maxlength="10" class="field-input" value="<%= settings.address.pincode %>">
+        </div>
+      </div>
+    </section>
+
+    <!-- Invoice numbering & defaults -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-slate-700">
+        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-100 text-teal-700"><i data-lucide="hash" class="h-3.5 w-3.5"></i></span>
+        Invoice Numbering &amp; Defaults
+      </h2>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label for="invoicePrefix" class="field-label">Invoice Prefix</label>
+          <input id="invoicePrefix" type="text" maxlength="12" class="field-input" value="<%= settings.invoicePrefix %>">
+        </div>
+        <div>
+          <label for="invoicePadding" class="field-label">Number Padding (digits)</label>
+          <select id="invoicePadding" class="field-input">
+            <% [3,4,5,6,7,8].forEach(function (p) { %>
+              <option value="<%= p %>" <%= settings.invoicePadding === p ? 'selected' : '' %>><%= p %> digits</option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label for="nextInvoiceNumber" class="field-label">Next Invoice Number</label>
+          <input id="nextInvoiceNumber" type="number" min="1" step="1" class="field-input" value="<%= settings.nextInvoiceNumber %>">
+          <p class="mt-1 text-[11px] text-slate-400">Numbers already issued are never reused; this can only move forward.</p>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          <div>
+            <label for="defaultTaxMode" class="field-label">Default GST Mode</label>
+            <select id="defaultTaxMode" class="field-input">
+              <option value="exclusive" <%= settings.defaultTaxMode === 'exclusive' ? 'selected' : '' %>>GST Exclusive</option>
+              <option value="inclusive" <%= settings.defaultTaxMode === 'inclusive' ? 'selected' : '' %>>GST Inclusive</option>
+            </select>
+          </div>
+          <label class="flex min-h-[46px] cursor-pointer items-center gap-2.5 rounded-xl border border-slate-300 px-3">
+            <input id="defaultRoundOff" type="checkbox" class="h-5 w-5 rounded accent-teal-700" <%= settings.defaultRoundOff ? 'checked' : '' %>>
+            <span class="text-sm font-medium text-slate-700">Round off net amount by default</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Invoice extras -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+      <h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-slate-700">
+        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-100 text-teal-700"><i data-lucide="scroll-text" class="h-3.5 w-3.5"></i></span>
+        Invoice Extras &amp; Logo
+      </h2>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label for="termsText" class="field-label">Terms &amp; Conditions</label>
+          <textarea id="termsText" rows="3" maxlength="500" class="field-input resize-none"><%= settings.termsText %></textarea>
+        </div>
+        <div class="sm:col-span-2">
+          <label for="thankYouText" class="field-label">Footer Message (printed bottom-left, e.g. "Get well soon...")</label>
+          <input id="thankYouText" type="text" maxlength="120" class="field-input" value="<%= settings.thankYouText %>">
+        </div>
+        <div class="sm:col-span-2">
+          <p class="field-label">Logo (printed on invoice · max ~150 KB)</p>
+          <div class="flex items-center gap-3">
+            <img id="logo-preview" src="<%= settings.logoDataUrl || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2394a3b8%22 stroke-width=%221.5%22%3E%3Crect x=%223%22 y=%223%22 width=%2218%22 height=%2218%22 rx=%222%22/%3E%3Cpath d=%22M3 15l4-4 4 4 5-5 5 5%22/%3E%3C/svg%3E' %>" alt="Logo preview" class="h-16 w-16 rounded-xl border border-slate-200 bg-slate-50 object-contain p-1">
+            <div class="flex flex-wrap gap-2">
+              <label class="flex cursor-pointer items-center gap-1.5 rounded-xl bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+                <i data-lucide="upload" class="h-4 w-4"></i> Upload
+                <input id="logo-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
+              </label>
+              <button type="button" id="logo-remove" class="flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
+                <i data-lucide="trash-2" class="h-4 w-4"></i> Remove
+              </button>
+            </div>
+            <input type="hidden" id="logoDataUrl" value="<%= settings.logoDataUrl %>">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p id="settings-error" class="hidden rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200"></p>
+
+    <div class="sticky bottom-16 md:bottom-4 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur md:shadow-sm md:ring-1 md:ring-slate-200">
+      <div class="flex items-center justify-between gap-3">
+        <p class="pl-1 text-xs text-slate-400">Settings apply to new bills only. Saved bills keep their snapshot.</p>
+        <button type="submit" id="settings-save-btn" class="flex shrink-0 items-center gap-2 rounded-xl bg-teal-700 px-6 py-3 text-sm font-bold text-white shadow transition hover:bg-teal-800 active:scale-[0.98] disabled:opacity-60">
+          <i data-lucide="save" class="h-4 w-4"></i> Save Settings
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Saved medicines pointer -->
+  <section class="rounded-2xl bg-teal-50 p-4 ring-1 ring-teal-200 sm:p-5">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="flex items-center gap-2 text-sm font-bold text-teal-900">
+          <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-200 text-teal-800"><i data-lucide="pill" class="h-3.5 w-3.5"></i></span>
+          Medicines
+        </h2>
+        <p class="mt-1 text-xs text-teal-800/80">Saved medicines now have their own page — manage names, MRP, rate, GST and more there.</p>
+      </div>
+      <a href="/medicines" class="flex items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-teal-800">
+        <i data-lucide="arrow-right" class="h-4 w-4"></i> Open Medicines
+      </a>
+    </div>
+  </section>
+
+  <!-- Change password -->
+  <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+    <h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-slate-700">
+      <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100 text-red-700"><i data-lucide="key-round" class="h-3.5 w-3.5"></i></span>
+      Change Password
+    </h2>
+    <form id="password-form" novalidate class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div>
+        <label for="currentPassword" class="field-label">Current Password</label>
+        <input id="currentPassword" type="password" autocomplete="current-password" class="field-input">
+      </div>
+      <div>
+        <label for="newPassword" class="field-label">New Password</label>
+        <input id="newPassword" type="password" autocomplete="new-password" class="field-input">
+      </div>
+      <div>
+        <label for="confirmPassword" class="field-label">Confirm New Password</label>
+        <input id="confirmPassword" type="password" autocomplete="new-password" class="field-input">
+      </div>
+      <p id="password-error" class="hidden sm:col-span-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"></p>
+      <div class="sm:col-span-3">
+        <button type="submit" id="password-save-btn" class="rounded-xl bg-slate-800 px-5 py-3 text-sm font-bold text-white hover:bg-slate-900 disabled:opacity-60">
+          Update Password
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<style>
+  .field-label { display:block; margin-bottom:.25rem; font-size:12px; font-weight:600; color:#475569; }
+  .field-input { width:100%; border-radius:.75rem; border:1px solid #cbd5e1; padding:.625rem .75rem; font-size:16px; outline:none; transition:border-color .15s, box-shadow .15s; }
+  .field-input:focus { border-color:#0d9488; box-shadow:0 0 0 3px rgba(13,148,136,.15); }
+</style>
+
+<%- include('../partials/layout-bottom', { scripts: ['settings'] }) %>

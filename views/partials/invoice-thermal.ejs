@@ -1,0 +1,101 @@
+<%
+  /** 80mm thermal receipt — compact layout for receipt printers. */
+  function inr(v) {
+    const n = Number(v) || 0;
+    const neg = n < 0;
+    const [i, d] = Math.abs(n).toFixed(2).split('.');
+    const last3 = i.slice(-3);
+    const rest = i.slice(0, -3);
+    return (neg ? '-' : '') + 'Rs.' + (rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3) + '.' + d;
+  }
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d = new Date(bill.invoiceDate);
+  const dateStr = isNaN(d) ? '' : String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+  const s = bill.seller || {};
+  const c = bill.customer || {};
+  const sum = bill.summary || {};
+  const isIgst = bill.taxSplit === 'igst';
+%>
+
+<div class="invoice-thermal mx-auto w-[80mm] bg-white p-[3mm] font-mono text-[10px] leading-snug text-black shadow-lg print:shadow-none">
+
+  <div class="text-center">
+    <% if (s.logoDataUrl) { %><img src="<%= s.logoDataUrl %>" alt="" class="mx-auto h-10 object-contain"><% } %>
+    <p class="text-[13px] font-black uppercase"><%= s.businessName %></p>
+    <% (s.addressText || '').split('\n').filter(Boolean).forEach(function (line) { %><p class="text-[9px]"><%= line %></p><% }) %>
+    <% if (s.phone) { %><p class="text-[9px]">Ph: <%= s.phone %></p><% } %>
+    <% if (s.gstin) { %><p class="text-[9px]">GSTIN: <%= s.gstin %></p><% } %>
+  </div>
+
+  <div class="my-1.5 border-t border-dashed border-black"></div>
+
+  <div class="flex justify-between text-[9.5px]">
+    <span>Bill: <strong><%= bill.invoiceNumber %></strong></span>
+    <span><%= dateStr %> <%= bill.invoiceTime %></span>
+  </div>
+  <div class="text-[9.5px]">Customer: <%= c.name %><% if (c.doctorName) { %> (Dr: <%= c.doctorName %>)<% } %></div>
+  <div class="text-[9.5px]">Type: <%= bill.invoiceType %> / <%= bill.paymentMode %></div>
+
+  <div class="my-1.5 border-t border-dashed border-black"></div>
+
+  <table class="w-full text-[9.5px]">
+    <thead>
+      <tr class="border-b border-black text-left">
+        <th>Item</th>
+        <th class="text-right">Qty</th>
+        <th class="text-right">Rate</th>
+        <th class="text-right">Amt</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% bill.items.forEach(function (it) { %>
+        <tr>
+          <td colspan="4" class="pt-0.5 font-semibold"><%= it.productName %><%= it.batchNumber ? ' [' + it.batchNumber + ']' : '' %></td>
+        </tr>
+        <tr>
+          <td class="text-[8.5px] text-slate-700"><%= it.gstRate %>% GST<%= it.discountValue ? ' · ' + it.discountValue + (it.discountType === 'percent' ? '%' : ' Rs') + ' off' : '' %></td>
+          <td class="text-right align-top"><%= it.quantity %></td>
+          <td class="text-right align-top"><%= inr(it.rate).replace('Rs.', '') %></td>
+          <td class="text-right align-top font-semibold"><%= inr(it.lineTotal).replace('Rs.', '') %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="my-1.5 border-t border-dashed border-black"></div>
+
+  <table class="w-full text-[9.5px]">
+    <tbody>
+      <tr><td>Taxable</td><td class="text-right"><%= inr(sum.totalTaxable) %></td></tr>
+      <% if (!isIgst) { %>
+        <tr><td>CGST</td><td class="text-right"><%= inr(sum.totalCgst) %></td></tr>
+        <tr><td>SGST</td><td class="text-right"><%= inr(sum.totalSgst) %></td></tr>
+      <% } else { %>
+        <tr><td>IGST</td><td class="text-right"><%= inr(sum.totalIgst) %></td></tr>
+      <% } %>
+      <% (bill.charges || []).forEach(function (ch) { %>
+        <tr><td><%= ch.label %></td><td class="text-right"><%= inr(ch.amount) %></td></tr>
+      <% }) %>
+      <% if (sum.roundOff !== 0) { %><tr><td>Round Off</td><td class="text-right"><%= inr(sum.roundOff) %></td></tr><% } %>
+    </tbody>
+  </table>
+
+  <div class="mt-1 flex justify-between border-t-2 border-black py-1 text-[12px] font-black">
+    <span>TOTAL</span><span><%= inr(sum.netAmount) %></span>
+  </div>
+
+  <p class="mt-1 text-[8.5px]"><%= sum.amountInWords %></p>
+
+  <% if (bill.termsText) { %><p class="mt-1 text-center text-[8px] text-slate-600"><%= bill.termsText %></p><% } %>
+  <% if (s.thankYouText || s.drugLicenseNo) { %>
+    <div class="mt-1.5 border-t border-dashed border-black pt-1 text-center text-[8.5px]">
+      <% if (s.drugLicenseNo) { %><p>DL: <%= s.drugLicenseNo %></p><% } %>
+    </div>
+  <% } %>
+
+  <% if (bill.status === 'cancelled') { %>
+    <p class="mt-2 text-center text-[13px] font-black uppercase text-red-600">*** CANCELLED ***</p>
+  <% } %>
+  <p class="mt-2 text-center text-[9px] font-semibold">Thank You! Visit Again</p>
+  <div class="h-6"></div>
+</div>

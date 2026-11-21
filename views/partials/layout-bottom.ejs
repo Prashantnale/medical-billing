@@ -1,0 +1,33 @@
+    </main>
+
+    <!-- Mobile bottom action bar (single-hand reach) -->
+    <nav class="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden" aria-label="Quick navigation">
+      <a href="/dashboard" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium <%= path === '/dashboard' ? 'text-teal-700' : 'text-slate-500' %>">
+        <i data-lucide="layout-dashboard" class="h-5 w-5"></i> Home
+      </a>
+      <a href="/bills" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium <%= (path === '/bills' || path.startsWith('/bills/view')) ? 'text-teal-700' : 'text-slate-500' %>">
+        <i data-lucide="receipt-text" class="h-5 w-5"></i> Bills
+      </a>
+      <a href="/bills/new" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium <%= path === '/bills/new' ? 'text-teal-700' : 'text-slate-500' %>">
+        <i data-lucide="file-plus-2" class="h-5 w-5"></i> New Bill
+      </a>
+      <a href="/medicines" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium <%= path.startsWith('/medicines') ? 'text-teal-700' : 'text-slate-500' %>">
+        <i data-lucide="pill" class="h-5 w-5"></i> Meds
+      </a>
+      <a href="/settings" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium <%= path === '/settings' ? 'text-teal-700' : 'text-slate-500' %>">
+        <i data-lucide="settings" class="h-5 w-5"></i> Settings
+      </a>
+    </nav>
+  </div>
+</div>
+
+<!-- Toast notifications -->
+<div id="toast-root" class="fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 space-y-2 md:bottom-6" aria-live="polite"></div>
+
+<script src="/js/vendor/lucide.min.js" defer></script>
+<script src="/js/app.js" defer></script>
+<% (locals.scripts || []).forEach(function (s) { %>
+<script src="/js/<%= s %>.js" defer></script>
+<% }) %>
+</body>
+</html>
